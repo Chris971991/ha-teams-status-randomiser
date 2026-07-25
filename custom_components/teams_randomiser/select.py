@@ -42,11 +42,18 @@ class TeamsStatusSelect(TeamsRandomiserEntity, SelectEntity):
 
     @property
     def current_option(self) -> str | None:
-        status = self._data.get("status")
-        # Only report a value the dropdown actually offers. The app reports
-        # null before its first change of the day, and Teams' own automatic
-        # presence can be something not in this list (e.g. "In a meeting").
-        return status if status in STATUSES else None
+        # What Teams is ACTUALLY showing wins over what the app last set. The
+        # app's own `status` is null after a reset, before the day's first
+        # change, and all day on a day off — so keying off it alone showed
+        # "unknown" while Teams sat there plainly displaying Available.
+        for value in (self._data.get("teamsPresence"), self._data.get("status")):
+            if value in STATUSES:
+                return value
+        # Still None when Teams reports something this dropdown cannot set,
+        # e.g. "In a meeting" or "Presenting" — those are Teams' own automatic
+        # presence, and showing them as a selected option would imply we could
+        # set them back.
+        return None
 
     async def async_select_option(self, option: str) -> None:
         await self.coordinator.async_send(f"set {option}")

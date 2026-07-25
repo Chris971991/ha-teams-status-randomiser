@@ -43,10 +43,21 @@ class TeamsSensorDescription(SensorEntityDescription):
 
 
 SENSORS: tuple[TeamsSensorDescription, ...] = (
+    # What Teams is showing. This is the one people mean by "my status".
+    TeamsSensorDescription(
+        key="teams_presence",
+        translation_key="teams_presence",
+        icon="mdi:microsoft-teams",
+        value=lambda d: d.get("teamsPresence") or d.get("status"),
+    ),
+    # What the APP last set, which is deliberately different: null after a
+    # reset, before the day's first change, and all day on a day off. Useful
+    # for telling "the randomiser did this" from "Teams decided this".
     TeamsSensorDescription(
         key="status",
         translation_key="status",
-        icon="mdi:microsoft-teams",
+        icon="mdi:shuffle-variant",
+        entity_registry_enabled_default=False,
         value=lambda d: d.get("status"),
     ),
     TeamsSensorDescription(

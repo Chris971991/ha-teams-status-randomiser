@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Teams Status Randomiser",
-        "description": "Enter the address of the PC running the app. Turn the bridge on first in the app: Settings \u2192 Behaviour \u2192 System. To reach it from another machine you also need \"Allow other machines on my network to connect\" and the firewall rule the app offers when you save.",
+        "description": "Enter the address of the PC running the app. Turn the bridge on first in the app: Settings → Behaviour → System. To reach it from another machine you also need \"Allow other machines on my network to connect\" and the firewall rule the app offers when you save.",
         "data": {
           "host": "Host",
           "port": "Port",
@@ -17,7 +17,7 @@
       },
       "reconfigure": {
         "title": "Teams Status Randomiser",
-        "description": "Update the address or token \u2014 for example after regenerating the token, or if the PC's IP address changed.",
+        "description": "Update the address or token — for example after regenerating the token, or if the PC's IP address changed.",
         "data": {
           "host": "Host",
           "port": "Port",
@@ -27,7 +27,7 @@
     },
     "error": {
       "cannot_connect": "Could not reach the app. Check it is running, the bridge is enabled, and the port and firewall allow this machine.",
-      "invalid_auth": "The app rejected that token. Copy it again from Settings \u2192 Behaviour \u2192 System.",
+      "invalid_auth": "The app rejected that token. Copy it again from Settings → Behaviour → System.",
       "unknown": "Unexpected error."
     },
     "abort": {
@@ -37,38 +37,85 @@
   },
   "entity": {
     "select": {
-      "status": { "name": "Status" },
-      "work_location": { "name": "Work location" }
+      "status": {
+        "name": "Status"
+      },
+      "work_location": {
+        "name": "Work location"
+      }
     },
     "switch": {
-      "randomiser": { "name": "Randomiser" }
+      "randomiser": {
+        "name": "Randomiser"
+      }
     },
     "text": {
-      "message": { "name": "Status message" }
+      "message": {
+        "name": "Status message"
+      }
     },
     "button": {
-      "change_now": { "name": "Change status now" },
-      "reroll": { "name": "Reroll next status" },
-      "reset": { "name": "Reset to automatic" },
-      "clear_message": { "name": "Clear status message" }
+      "change_now": {
+        "name": "Change status now"
+      },
+      "reroll": {
+        "name": "Reroll next status"
+      },
+      "reset": {
+        "name": "Reset to automatic"
+      },
+      "clear_message": {
+        "name": "Clear status message"
+      }
     },
     "sensor": {
-      "status": { "name": "Status" },
-      "message": { "name": "Status message" },
-      "upcoming": { "name": "Next status" },
-      "next_change": { "name": "Next change" },
-      "lunch_at": { "name": "Lunch at" },
-      "next_break": { "name": "Next break" },
-      "changes_today": { "name": "Changes today" },
-      "engine": { "name": "Engine" },
-      "last_error": { "name": "Last error" }
+      "status": {
+        "name": "Status set by the app"
+      },
+      "message": {
+        "name": "Status message"
+      },
+      "upcoming": {
+        "name": "Next status"
+      },
+      "next_change": {
+        "name": "Next change"
+      },
+      "lunch_at": {
+        "name": "Lunch at"
+      },
+      "next_break": {
+        "name": "Next break"
+      },
+      "changes_today": {
+        "name": "Changes today"
+      },
+      "engine": {
+        "name": "Engine"
+      },
+      "last_error": {
+        "name": "Last error"
+      },
+      "teams_presence": {
+        "name": "Teams presence"
+      }
     },
     "binary_sensor": {
-      "connected": { "name": "Connected to Teams" },
-      "teams_running": { "name": "Teams running" },
-      "in_work_hours": { "name": "In work hours" },
-      "day_off": { "name": "Day off" },
-      "on_break": { "name": "On break" }
+      "connected": {
+        "name": "Connected to Teams"
+      },
+      "teams_running": {
+        "name": "Teams running"
+      },
+      "in_work_hours": {
+        "name": "In work hours"
+      },
+      "day_off": {
+        "name": "Day off"
+      },
+      "on_break": {
+        "name": "On break"
+      }
     }
   }
 }
