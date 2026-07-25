@@ -55,11 +55,14 @@ class TeamsRandomiserConfigFlow(ConfigFlow, domain=DOMAIN):
             except Exception:  # noqa: BLE001 - surfaced to the user as "unknown"
                 errors["base"] = "unknown"
             else:
-                version = status.get("version", "")
-                return self.async_create_entry(
-                    title=f"{DEFAULT_NAME}" + (f" {version}" if version else ""),
-                    data=user_input,
-                )
+                # Title deliberately EXCLUDES the app version. has_entity_name
+                # derives entity_ids from the device name, so a version in the
+                # title bakes it into every entity_id — which then goes stale
+                # on the next app update and cannot be corrected without
+                # renaming every entity. The version belongs on the device as
+                # sw_version, where it updates itself.
+                del status
+                return self.async_create_entry(title=DEFAULT_NAME, data=user_input)
 
         return self.async_show_form(
             step_id="user",
