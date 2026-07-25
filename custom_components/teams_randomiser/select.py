@@ -62,21 +62,32 @@ class TeamsStatusSelect(TeamsRandomiserEntity, SelectEntity):
 class TeamsWorkLocationSelect(TeamsRandomiserEntity, SelectEntity):
     """Work location shown on the Teams profile.
 
-    Licence-gated: on a tenant without Microsoft Places the control does not
-    exist in Teams at all and the command will fail. There is no way to read
-    the current value back, so this is write-only and stays unknown.
+    Licence-gated behind Microsoft Places. Where it is not enabled, Teams still
+    RENDERS the menu option and simply ignores the click — so app versions
+    before 2.16.3 reported success for a write that never applied. The app
+    verifies now and fails honestly, which surfaces here as a failed action.
     """
 
     _attr_translation_key = "work_location"
     _attr_icon = "mdi:office-building-marker-outline"
     _attr_options = WORK_LOCATIONS
-    _attr_entity_registry_enabled_default = False
 
     def __init__(self, coordinator) -> None:
         super().__init__(coordinator, "work_location")
 
     @property
     def current_option(self) -> str | None:
+        # App 2.16.3+ reports the real value: "" means none set, and null means
+        # it could not be read. Before that the field is absent entirely, so
+        # this stays None and the select behaves as it always did.
+        value = self._data.get("workLocation")
+        if not value:
+            return None
+        # Teams says "Remote"/"Office"; match case-insensitively so a wording
+        # change does not silently blank the control.
+        for option in WORK_LOCATIONS:
+            if option.lower() == value.strip().lower():
+                return option
         return None
 
     async def async_select_option(self, option: str) -> None:

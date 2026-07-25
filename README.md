@@ -35,14 +35,15 @@ One device with the following entities.
 | Change status now | `button` | Pick a new status immediately from the weighted pool |
 | Reset to automatic | `button` | Hand presence back to Teams and clear the app's message |
 | Clear status message | `button` | Remove the note |
-| Reroll next status | `button` | Re-draw the *upcoming* status without changing the current one (disabled by default) |
-| Work location | `select` | Office / Remote / Clear (disabled by default — needs Microsoft Places) |
+| Reroll next status | `button` | Re-draw the *upcoming* status without changing the current one |
+| Work location | `select` | Office / Remote / Clear — needs Microsoft Places on your tenant (see Notes) |
 
 ### State
 
 | Entity | Type | Notes |
 |---|---|---|
-| Status, Status message, Next status | `sensor` | What the app currently has set |
+| **Teams presence** | `sensor` | What Teams is actually showing |
+| Status set by the app, Status message, Next status | `sensor` | What the *randomiser* set — null after a reset or on a day off |
 | Next change, Lunch at, Next break | `sensor` (timestamp) | Carry a real timezone offset |
 | Changes today | `sensor` | Resets daily |
 | Engine, Last error | `sensor` (diagnostic) | `cdp` = invisible, `uia` = visible fallback |
@@ -122,8 +123,16 @@ mode: single
   presence cross the network unencrypted.
 - Commands need **Teams running**. With Teams closed they fail with a clear
   error rather than silently doing nothing.
-- Work location is licence-gated and write-only; there is no way to read the
-  current value back, so it stays `unknown`.
+- **Work location is licence-gated behind Microsoft Places.** Where it is not
+  enabled, Teams still *renders* the menu option and silently ignores the click
+  — app versions before 2.16.3 reported success for a write that never applied.
+  The app verifies now, so the control fails honestly instead. Its current value
+  is read back from Teams (app 2.16.3+), and is blank when nothing is set.
+- **"Next change" is blank outside working hours and on days off** — the
+  randomiser has nothing scheduled then, which is correct rather than a fault.
+  The *Day off* and *In work hours* sensors say why.
+- **Buttons show `unknown` until pressed.** That is Home Assistant's convention:
+  a button's state is the timestamp of its last press.
 
 ## Licence
 

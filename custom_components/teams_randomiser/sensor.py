@@ -57,7 +57,6 @@ SENSORS: tuple[TeamsSensorDescription, ...] = (
         key="status",
         translation_key="status",
         icon="mdi:shuffle-variant",
-        entity_registry_enabled_default=False,
         value=lambda d: d.get("status"),
     ),
     TeamsSensorDescription(

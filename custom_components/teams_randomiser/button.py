@@ -34,7 +34,6 @@ BUTTONS: tuple[TeamsButtonDescription, ...] = (
         translation_key="reroll",
         icon="mdi:reload",
         command="reroll",
-        entity_registry_enabled_default=False,
     ),
     TeamsButtonDescription(
         key="reset",

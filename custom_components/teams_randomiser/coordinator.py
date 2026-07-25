@@ -29,6 +29,22 @@ class CommandRefused(HomeAssistantError):
     """The command reached the app and the app refused it."""
 
 
+def _tidy(reply: str) -> str:
+    """Collapse the app's nested error prefixes into one readable sentence.
+
+    The app wraps an engine error inside its own, so a refused command arrives
+    as "ERR CDP could not set work location 'Office': ERR location did not
+    change ...". Home Assistant shows this verbatim in a toast, where the
+    repeated ERR reads like a stutter and buries the part that matters.
+    """
+    text = (reply or "").strip()
+    while text.upper().startswith("ERR "):
+        text = text[4:].lstrip()
+    # ...and the inner one, wherever the app spliced it in.
+    text = text.replace(": ERR ", ": ")
+    return text
+
+
 class TeamsRandomiserClient:
     """Thin wrapper over the app's local HTTP bridge.
 
@@ -87,8 +103,9 @@ class TeamsRandomiserClient:
                     reply = await resp.text()
                 if resp.status != 200:
                     # Surface the app's own wording — it is written for humans
-                    # and says WHY (Teams not running, status not in the pool).
-                    raise CommandRefused(reply or f"HTTP {resp.status}")
+                    # and says WHY (Teams not running, work location not
+                    # licensed, a status not in the pool).
+                    raise CommandRefused(_tidy(reply) or f"HTTP {resp.status}")
                 return reply
         except (aiohttp.ClientError, asyncio.TimeoutError) as err:
             raise CannotConnect(str(err)) from err
