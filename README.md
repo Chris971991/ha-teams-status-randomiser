@@ -1,5 +1,8 @@
 # Teams Status Randomiser — Home Assistant integration
 
+[![Open in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Chris971991&repository=ha-teams-status-randomiser&category=integration)
+[![Add integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=teams_randomiser)
+
 Control and monitor [Teams Status Randomiser](https://github.com/Chris971991/TeamsStatusRandomiser-Releases)
 from Home Assistant.
 
@@ -50,10 +53,15 @@ One device with the following entities.
 
 ### HACS
 
+Click the badge at the top, or by hand:
+
 1. HACS → three-dot menu → **Custom repositories**
 2. Add `https://github.com/Chris971991/ha-teams-status-randomiser`, type **Integration**
 3. Install, then restart Home Assistant
 4. Settings → Devices & Services → **Add integration** → *Teams Status Randomiser*
+
+Needs the app itself: **[Teams Status Randomiser](https://github.com/Chris971991/TeamsStatusRandomiser-Releases/releases/latest)**
+(2.16.2 or newer for live presence).
 
 ### Manual
 
