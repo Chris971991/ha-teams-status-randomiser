@@ -35,11 +35,38 @@ def _timestamp(raw: Any) -> datetime | None:
     return dt_util.parse_datetime(str(raw))
 
 
+def _not_scheduled(data: dict[str, Any]) -> str:
+    """Why there is nothing scheduled, in words a person can act on."""
+    if data.get("dayOff"):
+        return "Day off"
+    if data.get("inActiveHours") is False:
+        return "Outside work hours"
+    if data.get("paused"):
+        return "Paused"
+    return "Not scheduled"
+
+
+def _time_or_reason(data: dict[str, Any], key: str, enabled: Any) -> str:
+    """The scheduled time as a local clock time, or why there isn't one."""
+    when = _timestamp(data.get(key))
+    if when is not None:
+        # Local time, no date: these are always today, and "11:47 AM" is what
+        # someone glancing at a dashboard wants. Built without %-I / %#I, which
+        # are platform-specific and would differ between a dev box and HAOS.
+        local = dt_util.as_local(when)
+        hour = local.hour % 12 or 12
+        return f"{hour}:{local.minute:02d} {'AM' if local.hour < 12 else 'PM'}"
+    if enabled is False:
+        return "Turned off in settings"
+    return _not_scheduled(data)
+
+
 @dataclass(frozen=True, kw_only=True)
 class TeamsSensorDescription(SensorEntityDescription):
     """Maps a /status field onto a sensor."""
 
     value: Callable[[dict[str, Any]], Any]
+    extra: Callable[[dict[str, Any]], dict[str, Any]] | None = None
 
 
 SENSORS: tuple[TeamsSensorDescription, ...] = (
@@ -65,32 +92,43 @@ SENSORS: tuple[TeamsSensorDescription, ...] = (
         icon="mdi:message-text-outline",
         value=lambda d: d.get("message"),
     ),
+    # A plain sensor, so it can say WHY rather than "Unknown": nothing is drawn
+    # outside working hours, which is correct rather than a fault.
     TeamsSensorDescription(
         key="upcoming",
         translation_key="upcoming",
         icon="mdi:skip-next-outline",
-        value=lambda d: d.get("upcoming"),
+        value=lambda d: d.get("upcoming") or _not_scheduled(d),
     ),
+    # Falls back to when the window next OPENS, so an evening or a weekend
+    # reads "Monday 5:30 am" instead of Unknown. Needs app 2.17.0+; older
+    # versions simply have no fallback and behave as before.
     TeamsSensorDescription(
         key="next_change",
         translation_key="next_change",
         device_class=SensorDeviceClass.TIMESTAMP,
         icon="mdi:clock-outline",
-        value=lambda d: _timestamp(d.get("nextChange")),
+        value=lambda d: _timestamp(d.get("nextChange") or d.get("nextWindowStart")),
     ),
+    # NOT timestamp sensors, deliberately. A timestamp sensor can only ever be
+    # a time or "Unknown", and these two are usually not scheduled — off in
+    # settings, or a day off — so the card was a column of Unknowns that gave
+    # the reader nothing. They show the time when there is one and say WHY when
+    # there is not; the raw ISO value stays in the `timestamp` attribute so
+    # automations lose nothing.
     TeamsSensorDescription(
         key="lunch_at",
         translation_key="lunch_at",
-        device_class=SensorDeviceClass.TIMESTAMP,
         icon="mdi:silverware-fork-knife",
-        value=lambda d: _timestamp(d.get("lunchAt")),
+        value=lambda d: _time_or_reason(d, "lunchAt", d.get("lunchEnabled")),
+        extra=lambda d: {"timestamp": d.get("lunchAt")},
     ),
     TeamsSensorDescription(
         key="next_break",
         translation_key="next_break",
-        device_class=SensorDeviceClass.TIMESTAMP,
         icon="mdi:coffee-outline",
-        value=lambda d: _timestamp(d.get("nextBreakAt")),
+        value=lambda d: _time_or_reason(d, "nextBreakAt", d.get("breaksEnabled")),
+        extra=lambda d: {"timestamp": d.get("nextBreakAt")},
     ),
     TeamsSensorDescription(
         key="changes_today",
@@ -146,3 +184,8 @@ class TeamsRandomiserSensor(TeamsRandomiserEntity, SensorEntity):
     @property
     def native_value(self) -> Any:
         return self.entity_description.value(self._data)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        extra = self.entity_description.extra
+        return extra(self._data) if extra else None

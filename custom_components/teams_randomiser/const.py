@@ -31,4 +31,8 @@ STATUSES = [
     "Appear offline",
 ]
 
-WORK_LOCATIONS = ["Office", "Remote", "Clear"]
+# "Not set" is both the empty state AND the way to clear it — a select must
+# report one of its own options, so a separate "Clear" verb left the control
+# showing Unknown whenever no location was set, which is the normal case.
+WORK_LOCATION_NONE = "Not set"
+WORK_LOCATIONS = [WORK_LOCATION_NONE, "Office", "Remote"]

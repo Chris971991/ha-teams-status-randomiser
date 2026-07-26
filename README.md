@@ -36,7 +36,7 @@ One device with the following entities.
 | Reset to automatic | `button` | Hand presence back to Teams and clear the app's message |
 | Clear status message | `button` | Remove the note |
 | Reroll next status | `button` | Re-draw the *upcoming* status without changing the current one |
-| Work location | `select` | Office / Remote / Clear — needs Microsoft Places on your tenant (see Notes) |
+| Work location | `select` | Not set / Office / Remote — selecting *Not set* clears it |
 
 ### State
 
@@ -128,9 +128,12 @@ mode: single
   — app versions before 2.16.3 reported success for a write that never applied.
   The app verifies now, so the control fails honestly instead. Its current value
   is read back from Teams (app 2.16.3+), and is blank when nothing is set.
-- **"Next change" is blank outside working hours and on days off** — the
-  randomiser has nothing scheduled then, which is correct rather than a fault.
-  The *Day off* and *In work hours* sensors say why.
+- **Nothing reads "Unknown" when there is a real answer.** Outside working
+  hours *Next change* shows when the window next opens ("Monday 5:32 am"), and
+  *Lunch at* / *Next break* say why they are blank — *Turned off in settings*,
+  *Day off*, *Outside work hours* — rather than leaving you guessing. Their raw
+  times stay available as a `timestamp` attribute for automations. Needs app
+  **2.17.0+**.
 - **Buttons show `unknown` until pressed.** That is Home Assistant's convention:
   a button's state is the timestamp of its last press.
 

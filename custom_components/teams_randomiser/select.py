@@ -7,7 +7,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import TeamsRandomiserConfigEntry
-from .const import STATUSES, WORK_LOCATIONS
+from .const import STATUSES, WORK_LOCATION_NONE, WORK_LOCATIONS
 from .entity import TeamsRandomiserEntity
 
 
@@ -77,18 +77,22 @@ class TeamsWorkLocationSelect(TeamsRandomiserEntity, SelectEntity):
 
     @property
     def current_option(self) -> str | None:
-        # App 2.16.3+ reports the real value: "" means none set, and null means
-        # it could not be read. Before that the field is absent entirely, so
-        # this stays None and the select behaves as it always did.
+        # App 2.16.3+ reports the real value. "" means none set — which is a
+        # KNOWN state, not an unknown one, so it reads "Not set".
         value = self._data.get("workLocation")
-        if not value:
+        if value is None:
+            # Field absent (app older than 2.16.3) or genuinely unreadable.
             return None
-        # Teams says "Remote"/"Office"; match case-insensitively so a wording
-        # change does not silently blank the control.
+        if not value:
+            return WORK_LOCATION_NONE
+        # Teams words it as a sentence ("In the office", "Working remotely");
+        # the app normalises, but match loosely so a wording change does not
+        # silently blank the control.
         for option in WORK_LOCATIONS:
-            if option.lower() == value.strip().lower():
+            if option != WORK_LOCATION_NONE and option.lower() in value.strip().lower():
                 return option
         return None
 
     async def async_select_option(self, option: str) -> None:
-        await self.coordinator.async_send(f"location {option.lower()}")
+        verb = "clear" if option == WORK_LOCATION_NONE else option.lower()
+        await self.coordinator.async_send(f"location {verb}")
