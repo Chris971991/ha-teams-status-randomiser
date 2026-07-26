@@ -80,11 +80,31 @@ Note the app has a matching hazard on its side — see its `teamsPresence` cache
 rules; a write there must update the cache or the same snap-back reappears one
 layer down (it did, and shipped as 2.16.2).
 
-**5. Work location is write-only.** Teams exposes no way to read the current
-value back, and it is licence-gated behind Microsoft Places — on a tenant without
-it the control does not exist and the command fails. Disabled by default.
+**5. Work location reads AND writes** (app 2.16.4+). It was neither for a while,
+and the reason is worth keeping: the Teams menu options ignore a synthetic
+`.click()` and ignore a full pointer sequence too — they commit only on a
+**keyboard press** (focus, then Enter). I told Chris this was a Microsoft Places
+licence gap without testing it. He pushed back, three activation methods were
+tried, and the licence story was simply wrong. Do not repeat that: an untested
+cause stated confidently is worse than "I don't know yet".
 
-**6. Availability means "the app answered".** The app being reachable while Teams
+The select's options are `Not set` / `Office` / `Remote`. A `select` can only
+report one of its own options, so an unset location needs a real option to sit
+on — that is what `Not set` is for, and choosing it sends `location clear`.
+
+**6. An entity that says `Unknown` most of the time is a design fault, not a
+state.** Four sensors read Unknown on any evening, weekend or day off. Two causes:
+the app sent `null` for anything not currently scheduled without distinguishing
+*turned off* from *not right now* (fixed app-side in 2.17.0 with
+`nextWindowStart`, `breaksEnabled`, `lunchEnabled`), and `device_class:
+timestamp` **cannot** hold an explanation — it is a time or it is Unknown. Where
+the useful answer is often a reason rather than a moment, use a plain sensor and
+keep the machine-readable value in a `timestamp` attribute.
+
+Format times with `hour % 12 or 12` — `%-I` (glibc) and `%#I` (Windows) are both
+platform-specific and one of them throws on the other platform.
+
+**7. Availability means "the app answered".** The app being reachable while Teams
 itself is closed is NOT unavailable — it is a real, reportable state, exposed as
 its own `teams_running` sensor rather than blanking every entity.
 
